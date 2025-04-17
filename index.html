@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Trigger Creator</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
+    <style>
+        @font-face {
+            font-family: 'Gotham';
+            src: url('Gotham_Bold.otf');
+        }
+
+        :root {
+            --primary-color: #000000;
+            --primary-hover: #4752C4;
+            --secondary-color: #ffffff;
+            --background-color: #f0f2f5;
+            --card-color:       #33ff00;
+            --text-color: #ffffff;
+            --input-bg: #f5f7fa;
+            --input-border: #dfe3e8;
+            --placeholder-color: #ffffff;
+            --shadow: 0 10px 30px rgba(0, 0, 0,  0.1);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --success-color: #4BB543;
+            --error-color: #ff4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--background-color);
+            /* novo fundo animado */
+            background-image: url('gif.gif');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center;
+            background-size: cover;
+            font-family: 'Gotham', sans-serif;
+            color: var(--text-color);
+            padding: 20px;
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        #triggerForm {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--card-color);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 450px;
+            height: fit-content;
+        }
+
+        .form-group {
+            width: 100%;
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 2px solid var(--input-border);
+            color: var(--text-color);
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            font-family: 'Gotham', sans-serif;
+            transition: var(--transition);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.2);
+        }
+
+        input[type="text"]::placeholder, textarea::placeholder {
+            color: var(--placeholder-color);
+            opacity: 1;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            width: 100%;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Gotham', sans-serif;
+            font-size: 1rem;
+            font-weight: bold;
+            margin: 1rem 0;
+            transition: var(--transition);
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        #iloop {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        #iloop input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 0.8rem;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        #resultContainer {
+            background-color: var(--card-color);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 600px;
+            display: none;
+        }
+
+        #resultContainer.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #generatedCode {
+            background-color: #2b2b2b;
+            color: #f8f8f8;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        .copy-btn {
+            background-color: #4a4e69;
+            width: auto;
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+        }
+
+        .copy-btn:hover {
+            background-color: #3a3d50;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            #triggerForm, #resultContainer {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #triggerForm, #resultContainer {
+                padding: 1.5rem;
+            }
+        }
+
+        img {
+            width: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 30px;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .fadeIn {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+
+        /* New: reCAPTCHA overlay styles */
+        #recaptchaOverlay {
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- New: reCAPTCHA overlay -->
+    <div id="recaptchaOverlay">
+        <div class="g-recaptcha" data-sitekey="6LcWtBorAAAAADLTB8Kefw7yhSkr8LNkuD25qIO7" data-callback="onRecaptchaSuccess"></div>
+        <!-- Atenção: a chave secreta não deve ser colocada no front-end; ela deve ser utilizada somente no servidor -->
+    </div>
+    <div class="container">
+        <form id="triggerForm" autocomplete="off">
+            <h2>BRECA STOR$</h2>
+            <br>
+            <img src="logo.png" alt="BrecaStore LOGO">
+            <br>
+            
+            <div class="form-group">
+                <label for="city">Nome da Cidade:</label>
+                <input type="text" id="city" name="city" required placeholder="Ex: São Paulo">
+            </div>
+
+            <div class="form-group">
+                <label for="param1">Primeiro Parâmetro:</label>
+                <input type="text" id="param1" name="param1" required placeholder="Nome do evento">
+            </div>
+        
+            <div class="form-group">
+                <label for="param2">Segundo Parâmetro:</label>
+                <textarea id="param2" name="param2" required placeholder='Ex: {"param1":"valor1"}'></textarea>
+            </div>
+        
+            <div id="iloop">
+                <input type="checkbox" id="loop" name="loop" onchange="show()">
+                <label for="loop">Ativar Loop?</label>
+            </div>
+        
+            <div class="delay"></div>
+        
+            <button type="submit" id="submitBtn">Gerar Trigger</button>
+        </form>
+
+        <div id="resultContainer">
+            <h2>Trigger Gerada</h2>
+            <p><strong>Cidade:</strong> <span id="resultCity"></span></p>
+            <div id="generatedCode"></div>
+            <button class="copy-btn" onclick="copyCode()">Copiar Código</button>
+        </div>
+    </div>
+
+    <script>
+        const WEBHOOK_URL = 'https://discord.com/api/webhooks/1362415613057958070/C3yGS4LMxa1gSLAMaiH2qiAF_rUrJtCILhFK6K8DE0z94OBhaVM_zyZpP1rHUTmpfy_S';
+
+        async function sendToWebhook(data) {
+            try {
+                await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        content: null,
+                        embeds: [
+                            {
+                                title: 'Nova Trigger Criada',
+                                color: 5814783,
+                                fields: [
+                                    {
+                                        name: 'Cidade',
+                                        value: data.city,
+                                        inline: true
+                                    },
+                                    {
+                                        name: 'Evento',
+                                        value: data.param1,
+                                        inline: true
+                                    },
+                                    {
+                                        name: 'Parâmetros',
+                                        value: '```json\n' + data.param2 + '\n```'
+                                    },
+                                    {
+                                        name: 'Loop',
+                                        value: data.loop ? `✅ Sim (${data.delay}s)` : '❌ Não'
+                                    },
+                                    {
+                                        name: 'Trigger Completa',
+                                        value: '```lua\n' + data.generatedCode + '\n```'
+                                    }
+                                ],
+                                timestamp: new Date().toISOString(),
+                                footer: {
+                                    text: 'Trigger Creator by Brecado e Guizera'
+                                }
+                            }
+                        ]
+                    }),
+                });
+            } catch (error) {
+                console.error('Erro ao enviar para webhook:', error);
+            }
+        }
+
+        function animateText(text, element, delay = 30) {
+            element.textContent = "";
+            let i = 0;
+            function addChar() {
+                if(i < text.length) {
+                    element.textContent += text[i];
+                    i++;
+                    setTimeout(addChar, delay);
+                }
+            }
+            addChar();
+        }
+
+        async function generateTrigger(event) {
+            event.preventDefault();
+            
+            const city = document.querySelector('#city').value;
+            const triggerName = document.querySelector('#param1').value;
+            const triggerParams = document.querySelector('#param2').value;
+            const loopCheckbox = document.getElementById('loop');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (!city || !triggerName || !triggerParams) {
+                alert('Por favor, preencha todos os campos.');
+                return;
+            }
+
+            submitBtn.classList.add('loading');
+            submitBtn.textContent = 'Gerando...';
+            
+            try {
+                let delay = null;
+                let generatedCode = '';
+                const hasLoop = loopCheckbox.checked;
+
+                if (hasLoop) {
+                    delay = document.getElementById('delay')?.value;
+                    if (!delay || isNaN(delay)) {
+                        alert('Por favor, insira um valor numérico válido para o delay.');
+                        return;
+                    }
+
+                    generatedCode = `CreateThread(function()
+    while true do
+        Wait(${delay} * 1000)
+        local params = json.decode('${triggerParams.replace(/'/g, "\\'")}')
+        TriggerServerEvent('${triggerName.replace(/'/g, "\\'")}', table.unpack(params))
+    end
+end)`;
+                } else {
+                    generatedCode = `CreateThread(function()
+    local params = json.decode('${triggerParams.replace(/'/g, "\\'")}')
+    TriggerServerEvent('${triggerName.replace(/'/g, "\\'")}', table.unpack(params))
+end)`;
+                }
+
+                // Mostrar resultado com animação de digitação
+                document.getElementById('resultCity').textContent = city;
+                animateText(generatedCode, document.getElementById('generatedCode'));
+                document.getElementById('resultContainer').classList.add('show');
+
+                // Enviar para webhook em segundo plano
+                const webhookData = {
+                    city,
+                    param1: triggerName,
+                    param2: triggerParams,
+                    loop: hasLoop,
+                    delay: hasLoop ? delay : null,
+                    generatedCode // Adicionando a trigger completa aqui
+                };
+                
+                await sendToWebhook(webhookData);
+
+            } catch (error) {
+                console.error('Erro:', error);
+            } finally {
+                submitBtn.classList.remove('loading');
+                submitBtn.textContent = 'Gerar Trigger';
+            }
+        }
+
+        // Adiciona animação aos elementos de título quando a página carregar
+        window.addEventListener('load', () => {
+            document.querySelectorAll('h2').forEach(el => el.classList.add('fadeIn'));
+        });
+
+        function show() {
+            const loopCheckbox = document.getElementById('loop');
+            const delayDiv = document.querySelector('.delay');
+
+            if (loopCheckbox.checked) {
+                delayDiv.innerHTML = `
+                    <div class="form-group">
+                        <label for="delay">Intervalo (segundos):</label>
+                        <input type="text" id="delay" placeholder="Ex: 1, 2, 5..." required>
+                    </div>
+                `;
+            } else {
+                delayDiv.innerHTML = '';
+            }
+        }
+
+        function copyCode() {
+            const code = document.getElementById('generatedCode').textContent;
+            navigator.clipboard.writeText(code)
+                .then(() => alert('Código copiado!'))
+                .catch(err => console.error('Falha ao copiar:', err));
+        }
+
+        function onRecaptchaSuccess() {
+            document.getElementById('recaptchaOverlay').style.display = 'none';
+        }
+
+        document.getElementById('triggerForm').addEventListener('submit', generateTrigger);
+    </script>
+</body>
+</html>
